@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 
 import "./ResetPasswordScreen.css";
@@ -10,6 +10,12 @@ const ResetPasswordScreen = ({ history, match }) => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  let { resetToken } = useParams();
+
+  useEffect(() => {
+    console.log(resetToken);
+  });
 
   const resetPasswordHandler = async (e) => {
     e.preventDefault();
@@ -31,14 +37,14 @@ const ResetPasswordScreen = ({ history, match }) => {
 
     try {
       const { data } = await axios.put(
-        `${SERVER_URL}/auth/passwordreset/${match.params.resetToken}`,
+        `${SERVER_URL}/auth/resetpassword/${resetToken}`,
         {
           password,
         },
         config
       );
 
-      console.log(data);
+      console.log("Response data:", data); // Log the response data
       setSuccess(data.data);
     } catch (error) {
       setError(error.response.data.error);
@@ -52,8 +58,7 @@ const ResetPasswordScreen = ({ history, match }) => {
     <div className="resetpassword-screen">
       <form
         onSubmit={resetPasswordHandler}
-        className="resetpassword-screen__form"
-      >
+        className="resetpassword-screen__form">
         <h3 className="resetpassword-screen__title">Forgot Password</h3>
         {error && <span className="error-message">{error} </span>}
         {success && (

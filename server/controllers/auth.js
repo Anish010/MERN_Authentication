@@ -94,19 +94,20 @@ exports.forgotPassword = async (req, res, next) => {
 };
 
 exports.resetPassword = async (req, res, next) => {
+  // Compare token in URL params to hashed token
   const resetPasswordToken = crypto
     .createHash("sha256")
     .update(req.params.resetToken)
     .digest("hex");
 
   try {
-    const user = User.findOne({
+    const user = await User.findOne({
       resetPasswordToken,
       resetPasswordExpire: { $gt: Date.now() },
     });
 
     if (!user) {
-      return next(new ErrorResponse("Invalid Reset Token", 400));
+      return next(new ErrorResponse("Invalid Token", 400));
     }
 
     user.password = req.body.password;
@@ -117,11 +118,11 @@ exports.resetPassword = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      data: "Password Reset Success",
-    })
-
-  } catch (error) {
-    next(error)
+      data: "Password Updated Success",
+      token: user.getSignedJwtToken(),
+    });
+  } catch (err) {
+    next(err);
   }
 };
 
